@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "br.com.marcelo.calculadoracarrinho"
+    namespace = "com.example.atv1_yuri_marcelo"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "br.com.marcelo.calculadoracarrinho"
+        applicationId = "com.example.atv1_yuri_marcelo"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

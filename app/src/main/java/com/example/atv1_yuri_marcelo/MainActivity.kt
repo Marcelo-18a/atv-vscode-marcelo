@@ -1,4 +1,4 @@
-package br.com.marcelo.calculadoracarrinho
+package com.example.atv1_yuri_marcelo
 
 import android.os.Bundle
 import android.util.Log
@@ -21,7 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,131 +33,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import java.math.BigDecimal
-import java.math.RoundingMode
-import java.text.NumberFormat
-import java.util.Locale
-
-interface Pagavel {
-    fun valorTotal(): BigDecimal
-}
-
-data class Produto(
-    val nome: String,
-    val preco: BigDecimal,
-    val descricao: String?,
-    val descontoPercentual: BigDecimal = BigDecimal.ZERO
-) : Pagavel {
-    override fun valorTotal(): BigDecimal = precoComDesconto(preco, descontoPercentual)
-}
-
-data class ItemCarrinho(
-    val produto: Produto,
-    val quantidade: Int
-) : Pagavel {
-    override fun valorTotal(): BigDecimal = produto.valorTotal() * quantidade.toBigDecimal()
-
-    fun subtotalBruto(): BigDecimal = produto.preco * quantidade.toBigDecimal()
-
-    fun descontoAplicado(): BigDecimal = subtotalBruto() - valorTotal()
-}
-
-private val catalogo = listOf(
-    Produto(
-        nome = "Notebook Dell Inspiron",
-        preco = "3499.00".toBigDecimal(),
-        descricao = "Notebook rápido para trabalho, estudos e entretenimento.",
-        descontoPercentual = "5".toBigDecimal()
-    ),
-    Produto(
-        nome = "Mouse sem fio",
-        preco = "89.90".toBigDecimal(),
-        descricao = null
-    ),
-    Produto(
-        nome = "Teclado mecânico RGB",
-        preco = "349.90".toBigDecimal(),
-        descricao = "Switch azul, iluminação RGB e apoio confortável para longas sessões.",
-        descontoPercentual = BigDecimal.ZERO
-    ),
-    Produto(
-        nome = "Monitor ultrawide profissional de alta resolução",
-        preco = "1299.90".toBigDecimal(),
-        descricao = "Tela ampla para produtividade com cores vivas e acabamento moderno.",
-        descontoPercentual = "10".toBigDecimal()
-    ),
-    Produto(
-        nome = "Webcam Full HD",
-        preco = "249.90".toBigDecimal(),
-        descricao = "Imagem nítida para reuniões e transmissões.",
-        descontoPercentual = BigDecimal.ZERO
-    ),
-    Produto(
-        nome = "Headset gamer",
-        preco = "299.90".toBigDecimal(),
-        descricao = "Som imersivo e microfone ajustável.",
-        descontoPercentual = BigDecimal.ZERO
-    ),
-    Produto(
-        nome = "Hub USB-C",
-        preco = "159.90".toBigDecimal(),
-        descricao = "Expanda as conexões do seu notebook.",
-        descontoPercentual = BigDecimal.ZERO
-    ),
-    Produto(
-        nome = "Cadeira ergonômica",
-        preco = "899.90".toBigDecimal(),
-        descricao = "Apoio lombar e ajustes para uma postura confortável.",
-        descontoPercentual = BigDecimal.ZERO
-    )
-)
-
-private val carrinho = listOf(
-    ItemCarrinho(catalogo[0], 2),
-    ItemCarrinho(catalogo[1], 1),
-    ItemCarrinho(catalogo[2], 1)
-)
-
-private fun precoComDesconto(preco: BigDecimal, percentual: BigDecimal): BigDecimal {
-    val fatorDesconto = percentual.divide("100".toBigDecimal())
-    return preco.multiply(BigDecimal.ONE - fatorDesconto).setScale(2, RoundingMode.HALF_UP)
-}
-
-private fun subtotalBruto(itens: List<ItemCarrinho>): BigDecimal =
-    itens.map(ItemCarrinho::subtotalBruto).fold(BigDecimal.ZERO, BigDecimal::add)
-
-private fun descontosAplicados(itens: List<ItemCarrinho>): BigDecimal =
-    itens.map(ItemCarrinho::descontoAplicado).fold(BigDecimal.ZERO, BigDecimal::add)
-
-private fun totalFinal(itens: List<ItemCarrinho>): BigDecimal =
-    itens.map(ItemCarrinho::valorTotal).fold(BigDecimal.ZERO, BigDecimal::add)
-
-private fun gerarRelatorio(itens: List<ItemCarrinho>) {
-    val produtosComDesconto = itens
-        .filter { it.produto.descontoPercentual > BigDecimal.ZERO }
-        .sortedByDescending(ItemCarrinho::valorTotal)
-        .map { "${it.produto.nome}: ${it.valorTotal().formatarMoeda()}" }
-
-    Log.i("CarrinhoLog", "Produtos com desconto aplicado")
-    produtosComDesconto.forEach { Log.i("CarrinhoLog", it) }
-    Log.i("CarrinhoLog", "Subtotal bruto: ${subtotalBruto(itens).formatarMoeda()}")
-    Log.i("CarrinhoLog", "Descontos aplicados: ${descontosAplicados(itens).formatarMoeda()}")
-    Log.i("CarrinhoLog", "Total final: ${totalFinal(itens).formatarMoeda()}")
-}
-
-private fun BigDecimal.formatarMoeda(): String =
-    NumberFormat.getCurrencyInstance(Locale("pt", "BR")).format(this)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        gerarRelatorio(carrinho)
+        val itens = CartRepository.carrinho
+        gerarRelatorio(itens)
         setContent {
             CalculadoraCarrinhoTheme {
-                CarrinhoScreen(carrinho)
+                CarrinhoScreen(itens)
             }
         }
     }
+}
+
+private fun gerarRelatorio(itens: List<ItemCarrinho>) {
+    Log.i("CarrinhoLog", "Produtos com desconto aplicado")
+    CartRepository.relatorioDeDescontos(itens).forEach { Log.i("CarrinhoLog", it) }
+    Log.i("CarrinhoLog", "Subtotal bruto: ${subtotalBruto(itens).formatarMoeda()}")
+    Log.i("CarrinhoLog", "Descontos aplicados: ${descontosAplicados(itens).formatarMoeda()}")
+    Log.i("CarrinhoLog", "Total final: ${totalFinal(itens).formatarMoeda()}")
 }
 
 @Composable
@@ -175,10 +70,6 @@ private fun CalculadoraCarrinhoTheme(content: @Composable () -> Unit) {
 
 @Composable
 private fun CarrinhoScreen(itens: List<ItemCarrinho>) {
-    val subtotal = subtotalBruto(itens)
-    val descontos = descontosAplicados(itens)
-    val total = totalFinal(itens)
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = { Cabecalho() }
@@ -194,7 +85,11 @@ private fun CarrinhoScreen(itens: List<ItemCarrinho>) {
             items(itens) { item -> LinhaProduto(item) }
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                ResumoCompra(subtotal, descontos, total)
+                ResumoCompra(
+                    subtotal = subtotalBruto(itens),
+                    descontos = descontosAplicados(itens),
+                    total = totalFinal(itens)
+                )
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }
@@ -216,11 +111,7 @@ private fun Cabecalho() {
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "Meu carrinho",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            Text(text = "Meu carrinho", style = MaterialTheme.typography.headlineSmall)
         }
     }
 }
@@ -256,10 +147,7 @@ private fun LinhaProduto(item: ItemCarrinho) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = produto.preco.formatarMoeda(),
-                    style = MaterialTheme.typography.labelLarge
-                )
+                Text(text = produto.preco.formatarMoeda(), style = MaterialTheme.typography.labelLarge)
                 Text(
                     text = "x${item.quantidade}",
                     style = MaterialTheme.typography.labelLarge,
@@ -276,7 +164,7 @@ private fun LinhaProduto(item: ItemCarrinho) {
 }
 
 @Composable
-private fun ResumoCompra(subtotal: BigDecimal, descontos: BigDecimal, total: BigDecimal) {
+private fun ResumoCompra(subtotal: java.math.BigDecimal, descontos: java.math.BigDecimal, total: java.math.BigDecimal) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -287,7 +175,7 @@ private fun ResumoCompra(subtotal: BigDecimal, descontos: BigDecimal, total: Big
         Spacer(modifier = Modifier.height(14.dp))
         LinhaResumo("Subtotal bruto", subtotal.formatarMoeda())
         LinhaResumo("Descontos aplicados", "-${descontos.formatarMoeda()}")
-        Divider(modifier = Modifier.padding(vertical = 14.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 14.dp))
         LinhaResumo("TOTAL", total.formatarMoeda(), destaque = true)
     }
 }
