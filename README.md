@@ -1,7 +1,3 @@
-# Calculadora de Carrinho de Compras
-
-Aplicativo Android desenvolvido por **Marcelo Augusto** com Kotlin e Jetpack Compose.
-
 ## Requisitos
 
 - Android Studio Ladybug ou mais recente
@@ -26,5 +22,4 @@ O relatório de produtos com desconto aparece no Logcat com a tag `CarrinhoLog`.
 - Total final: R$ 7.087,90
 
 ## Entrega
-
-Adicione neste arquivo as capturas de tela do emulador e do Logcat após executar o projeto. O vídeo de apresentação deve ser publicado no YouTube como “Não listado” e o link pode ser incluído nesta seção.
+Tenho que gravar ainda :(
